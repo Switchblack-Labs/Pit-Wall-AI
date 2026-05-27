@@ -3,7 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.api.health import router as health_router
+from app.api.telemetry import router as telemetry_router
+from app.api.competitors import router as competitors_router
+from app.api.websocket import router as websocket_router
 from app.utils.logger import logger
+from app.dependencies import get_race_state_service
+from app.api.strategy import router as strategy_router
 
 settings = get_settings()
 
@@ -21,6 +26,10 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(telemetry_router)
+app.include_router(competitors_router)
+app.include_router(websocket_router)
+app.include_router(strategy_router)
 
 
 @app.on_event("startup")
@@ -40,3 +49,9 @@ def root():
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION
     }
+
+
+@app.get("/debug/state")
+def debug_state():
+    service = get_race_state_service()
+    return service.get_state()
