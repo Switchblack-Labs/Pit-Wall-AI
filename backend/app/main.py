@@ -14,6 +14,7 @@ from app.api.explanation import router as explanation_router
 from app.api.mock_data import router as mock_router
 from app.api.demo import router as demo_router
 from fastapi.exceptions import RequestValidationError
+from app.api.rag import router as rag_router
 
 from app.core.exceptions import (
     validation_exception_handler,
@@ -55,7 +56,9 @@ app.include_router(simulation_router)
 app.include_router(explanation_router)
 app.include_router(mock_router)
 app.include_router(demo_router)
+app.include_router(rag_router)
 
+from app.api.rag import router as rag_router
 
 @app.on_event("startup")
 async def startup_event():
