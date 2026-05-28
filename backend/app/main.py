@@ -9,12 +9,33 @@ from app.api.websocket import router as websocket_router
 from app.utils.logger import logger
 from app.dependencies import get_race_state_service
 from app.api.strategy import router as strategy_router
+from app.api.simulation import router as simulation_router
+from app.api.explanation import router as explanation_router
+from app.api.mock_data import router as mock_router
+from app.api.demo import router as demo_router
+from fastapi.exceptions import RequestValidationError
+
+from app.core.exceptions import (
+    validation_exception_handler,
+    generic_exception_handler
+)
+
 
 settings = get_settings()
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION
+)
+
+app.add_exception_handler(
+    RequestValidationError,
+    validation_exception_handler
+)
+
+app.add_exception_handler(
+    Exception,
+    generic_exception_handler
 )
 
 app.add_middleware(
@@ -30,6 +51,10 @@ app.include_router(telemetry_router)
 app.include_router(competitors_router)
 app.include_router(websocket_router)
 app.include_router(strategy_router)
+app.include_router(simulation_router)
+app.include_router(explanation_router)
+app.include_router(mock_router)
+app.include_router(demo_router)
 
 
 @app.on_event("startup")

@@ -1,7 +1,10 @@
 from app.schemas.simulation import SimulationResult
 
 
-def simulate_strategy(scenario_type: str, laps_until_action: int):
+def simulate_strategy(
+    scenario_type: str,
+    laps_until_action: int
+):
     if scenario_type == "pit_now":
         return SimulationResult(
             projected_position=3,
