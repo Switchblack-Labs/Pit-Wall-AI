@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from langchain_chroma import Chroma
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -18,13 +20,26 @@ embedding_function = HuggingFaceEmbeddings(
 )
 
 
-def build_vector_store():
+def _index_exists() -> bool:
+    """True if a persisted Chroma index is already present."""
+    return Path(CHROMA_DB_DIR, "chroma.sqlite3").exists()
+
+
+def build_vector_store(force: bool = False):
+
+    if _index_exists() and not force:
+        print(
+            f"Chroma index already present at {CHROMA_DB_DIR}; skipping ingestion. "
+            "Pass force=True to rebuild."
+        )
+        return
 
     documents = load_documents()
 
     chunks = create_chunks(documents)
 
-    vector_store = Chroma.from_documents(
+    # from_documents persists to CHROMA_DB_DIR as a side effect.
+    Chroma.from_documents(
         documents=chunks,
         embedding=embedding_function,
         persist_directory=CHROMA_DB_DIR

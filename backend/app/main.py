@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,7 +9,7 @@ from app.api.telemetry import router as telemetry_router
 from app.api.competitors import router as competitors_router
 from app.api.websocket import router as websocket_router
 from app.utils.logger import logger
-from app.dependencies import get_race_state_service
+from app.dependencies import get_race_state_service, get_torcs_service
 from app.api.strategy import router as strategy_router
 from app.api.simulation import router as simulation_router
 from app.api.explanation import router as explanation_router
@@ -15,6 +17,7 @@ from app.api.mock_data import router as mock_router
 from app.api.demo import router as demo_router
 from fastapi.exceptions import RequestValidationError
 from app.api.rag import router as rag_router
+from app.api.torcs import router as torcs_router
 
 from app.core.exceptions import (
     validation_exception_handler,
@@ -24,9 +27,24 @@ from app.core.exceptions import (
 
 settings = get_settings()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Pit Wall backend starting")
+    yield
+    # Shutdown: stop any background TORCS streaming loop cleanly.
+    logger.info("Pit Wall backend shutting down")
+    try:
+        get_torcs_service().stop()
+    except Exception:  # noqa: BLE001 - shutdown must not raise
+        pass
+
+
 app = FastAPI(
     title=settings.APP_NAME,
-    version=settings.APP_VERSION
+    version=settings.APP_VERSION,
+    lifespan=lifespan,
 )
 
 app.add_exception_handler(
@@ -57,17 +75,7 @@ app.include_router(explanation_router)
 app.include_router(mock_router)
 app.include_router(demo_router)
 app.include_router(rag_router)
-
-from app.api.rag import router as rag_router
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Pit Wall backend starting")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Pit Wall backend shutting down")
+app.include_router(torcs_router)
 
 
 @app.get("/")

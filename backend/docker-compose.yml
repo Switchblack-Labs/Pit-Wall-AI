@@ -1,0 +1,51 @@
+services:
+  backend:
+    build: .
+    container_name: pitwall-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Defaults to the offline echo provider; override to use real Granite.
+      LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+      LLM_FALLBACK_ORDER: ${LLM_FALLBACK_ORDER:-watsonx,replicate,ollama,echo}
+      # watsonx
+      WATSONX_API_KEY: ${WATSONX_API_KEY:-}
+      WATSONX_PROJECT_ID: ${WATSONX_PROJECT_ID:-}
+      WATSONX_URL: ${WATSONX_URL:-https://us-south.ml.cloud.ibm.com}
+      WATSONX_MODEL: ${WATSONX_MODEL:-ibm/granite-3-3-8b-instruct}
+      # replicate
+      REPLICATE_API_TOKEN: ${REPLICATE_API_TOKEN:-}
+      REPLICATE_MODEL: ${REPLICATE_MODEL:-ibm-granite/granite-3.3-8b-instruct}
+      # ollama (points at the optional ollama service below when that profile is up)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-granite3.3:8b}
+      # langflow (optional; empty => in-process pipelines)
+      LANGFLOW_URL: ${LANGFLOW_URL:-}
+      LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
+    restart: unless-stopped
+
+  # Optional: local Granite via Ollama. Enable with:  docker compose --profile ollama up
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pitwall-ollama
+    profiles: ["ollama"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  # Optional: LangFlow orchestration server. Enable with:  docker compose --profile langflow up
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: pitwall-langflow
+    profiles: ["langflow"]
+    ports:
+      - "7860:7860"
+    environment:
+      LANGFLOW_HOST: 0.0.0.0
+      LANGFLOW_PORT: 7860
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
