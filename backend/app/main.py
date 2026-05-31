@@ -15,6 +15,7 @@ from app.api.mock_data import router as mock_router
 from app.api.demo import router as demo_router
 from fastapi.exceptions import RequestValidationError
 from app.api.rag import router as rag_router
+from app.api.integrate import router as integrate_router
 
 from app.core.exceptions import (
     validation_exception_handler,
@@ -57,6 +58,7 @@ app.include_router(explanation_router)
 app.include_router(mock_router)
 app.include_router(demo_router)
 app.include_router(rag_router)
+app.include_router(integrate_router)
 
 from app.api.rag import router as rag_router
 

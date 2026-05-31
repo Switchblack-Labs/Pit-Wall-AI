@@ -12,11 +12,43 @@ so the frontend can be built end-to-end today.
 from fastapi import APIRouter
 
 from app.schemas.integrate import RaceStateInput, FullRecommendation
-from app.integrations.granite_client import GraniteClient
+from app.clients.granite_client import GraniteClient
 
 router = APIRouter(prefix="/api/v1", tags=["integration"])
 
 _granite = GraniteClient()
+
+_GRANITE_SYSTEM = (
+    "You are an F1 race strategist on the pit wall. Given a structured pit "
+    "recommendation and the current race state, write ONE concise, confident "
+    "sentence (max ~30 words) telling the driver what to do and why. No preamble."
+)
+
+
+def _template_explanation(rec: dict, state: dict) -> str:
+    """Deterministic fallback so `explanation` is always a valid string,
+    even if Granite is unconfigured or unreachable."""
+    action = rec["recommended_action"].replace("_", " ").title()
+    reasons = ", ".join(r.replace("_", " ").lower() for r in rec["reason_codes"]) or "current pace"
+    return (
+        f"{action}: P{state.get('position', '?')} with {state.get('tyre_life', '?')} laps on "
+        f"{state.get('compound', 'tyres')}, {state.get('laps_remaining', '?')} to go — driven by {reasons}."
+    )
+
+
+async def _explain(rec: dict, state: dict) -> str:
+    """Pipe the structured call through Granite; fall back to a template on any error."""
+    prompt = (
+        f"Recommendation: {rec['recommended_action']} "
+        f"(confidence {rec['confidence']:.0%}, risk {rec['risk_level']}). "
+        f"Reason codes: {', '.join(rec['reason_codes'])}. "
+        f"Race state: {state}."
+    )
+    try:
+        text = await _granite.generate(prompt, system=_GRANITE_SYSTEM)
+        return (text or "").strip() or _template_explanation(rec, state)
+    except Exception:
+        return _template_explanation(rec, state)
 
 
 def _get_recommendation(state: dict, competitors):
@@ -82,7 +114,7 @@ async def recommend(state: RaceStateInput) -> FullRecommendation:
     competitors = payload.pop("competitors", None)
 
     rec = _get_recommendation(payload, competitors)
-    explanation = await _granite.explain(rec, payload)
+    explanation = await _explain(rec, payload)
 
     return FullRecommendation(
         recommended_action=rec["recommended_action"],
