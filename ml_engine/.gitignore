@@ -1,0 +1,6 @@
+data/f1_data.db
+data/f1_data.db-wal
+data/f1_data.db-shm
+data/fastf1_cache/
+__pycache__/
+*.pyc

@@ -1,0 +1,104 @@
+{
+  "passed": 6,
+  "failed": 1,
+  "skipped": 1,
+  "pass_rate": 0.8571428571428571,
+  "details": [
+    {
+      "name": "Monaco 2022 - Double Stack Disaster",
+      "status": "PASS",
+      "correct_action": "STAY_OUT",
+      "ferrari_action": "PIT",
+      "model_action": "STAY_OUT",
+      "confidence": 0.85,
+      "reasoning": "Undercut possible in ~4 laps, projected gain 1.5s. Good tyre life remaining, no need to pit",
+      "reason_codes": [
+        "UNDERCUT_VIABLE"
+      ],
+      "positions_lost_by_ferrari": 2
+    },
+    {
+      "name": "Britain 2022 - Unnecessary SC Pit",
+      "status": "PASS",
+      "correct_action": "STAY_OUT",
+      "ferrari_action": "PIT",
+      "model_action": "STAY_OUT",
+      "confidence": 0.85,
+      "reasoning": "Good tyre life remaining, no need to pit",
+      "reason_codes": [],
+      "positions_lost_by_ferrari": 3
+    },
+    {
+      "name": "Hungary 2022 - Wrong Compound on Restart",
+      "status": "PASS",
+      "correct_action": "PIT_MEDIUM",
+      "ferrari_action": "PIT_HARD",
+      "model_action": "PIT_MEDIUM",
+      "confidence": 0.85,
+      "reasoning": "Extreme deg rate 0.33s/lap - losing >0.2s every lap. FORCED PIT: 0.33s/lap deg is unsustainable, losing 10.2s total if staying out. Pit for MEDIUM projects P5 vs P1 staying out",
+      "reason_codes": [
+        "EXTREME_DEGRADATION"
+      ],
+      "positions_lost_by_ferrari": 4
+    },
+    {
+      "name": "Bahrain 2023 - Failed Overcut",
+      "status": "FAIL",
+      "correct_action": "PIT_HARD",
+      "ferrari_action": "STAY_OUT",
+      "model_action": "STAY_OUT",
+      "confidence": 0.5,
+      "reasoning": "High deg rate of 0.19s/lap. Staying out despite elevated degradation",
+      "reason_codes": [
+        "HIGH_DEGRADATION"
+      ],
+      "positions_lost_by_ferrari": 1
+    },
+    {
+      "name": "Singapore 2023 - VSC Missed Pit",
+      "status": "PASS",
+      "correct_action": "PIT_MEDIUM",
+      "ferrari_action": "STAY_OUT",
+      "model_action": "PIT_SOFT",
+      "confidence": 0.8,
+      "reasoning": "Safety car: Tyres at 48% - opportunistic stop; Gap behind (6.2s) too small - will lose position; OVERRIDE: 18 laps remaining, switch to SOFT for pace advantage",
+      "reason_codes": [
+        "SAFETY_CAR_PIT_WINDOW",
+        "HIGH_DEGRADATION"
+      ],
+      "positions_lost_by_ferrari": 1
+    },
+    {
+      "name": "Netherlands 2022 - VSC Missed Opportunity",
+      "status": "PASS",
+      "correct_action": "PIT_SOFT",
+      "ferrari_action": "STAY_OUT",
+      "model_action": "PIT_SOFT",
+      "confidence": 0.8,
+      "reasoning": "Safety car: Tyres at 6% - too fresh to waste; Mid/back position - less to lose from pitting; OVERRIDE: 24 laps remaining, switch to SOFT for pace advantage",
+      "reason_codes": [
+        "SAFETY_CAR_PIT_WINDOW"
+      ],
+      "positions_lost_by_ferrari": 1
+    },
+    {
+      "name": "Spain 2023 - Late Pit Timing",
+      "status": "PASS",
+      "correct_action": "PIT_HARD",
+      "ferrari_action": "STAY_OUT",
+      "model_action": "PIT_HARD",
+      "confidence": 0.9,
+      "reasoning": "Tyres near cliff - only ~0 laps remaining on SOFT. Undercut possible in ~2 laps, projected gain 2.0s. Pit for HARD projects P12 vs P20 staying out",
+      "reason_codes": [
+        "CRITICAL_TYRE_WEAR",
+        "UNDERCUT_VIABLE"
+      ],
+      "positions_lost_by_ferrari": 1
+    },
+    {
+      "name": "Mexico 2024 - Overextended Mediums",
+      "status": "SKIP",
+      "reason": "No data for 2024_mexico_city_r lap 30"
+    }
+  ]
+}
