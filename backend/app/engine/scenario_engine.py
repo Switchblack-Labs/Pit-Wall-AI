@@ -13,14 +13,17 @@ from app.schemas.simulation import SimulationResult
 from ml_engine.integration import get_engine
 
 
-def simulate_strategy(scenario_type: str, laps_until_action: int):
+def simulate_strategy(scenario_type: str, laps_until_action: int, race_state: dict = None):
     """
     Simulate a strategy scenario using the race projector.
-    Returns SimulationResult (Pydantic).
+
+    If `race_state` is provided (a dict of actual race conditions), the
+    projection runs from that state. Any missing fields fall back to sensible
+    defaults, so partial state still works. Returns SimulationResult (Pydantic).
     """
     engine = get_engine()
 
-    # Build a representative state for projection
+    # Default representative state; overlaid with any real values supplied.
     state = {
         "circuit": "bahrain",
         "compound": "MEDIUM",
@@ -37,6 +40,9 @@ def simulate_strategy(scenario_type: str, laps_until_action: int):
         "stops_made": 1,
         "track_status": "1",
     }
+    if race_state:
+        # Only override with non-None values from the caller.
+        state.update({k: v for k, v in race_state.items() if v is not None})
 
     decision_map = {
         "pit_now": "PIT_MEDIUM",

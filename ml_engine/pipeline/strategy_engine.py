@@ -158,12 +158,16 @@ class StrategyEngine:
         # FORCED PIT: If deg rate is high AND enough laps remaining for fresh tyres to pay off
         force_pit = False
         if deg_rate and laps_remaining > 8:
-            # Calculate: total time loss from staying out vs pit cost
-            total_deg_loss = deg_rate * laps_remaining  # seconds lost from deg over remaining race
+            # Time lost by staying out COMPOUNDS each lap: the tyre keeps aging,
+            # so the deficit vs a fresh tyre grows lap-on-lap. Model the cumulative
+            # loss as a running sum (~deg_rate * L*(L+1)/2), not a single-lap delta.
+            # The old linear estimate (deg_rate * L) badly understated long stints.
+            total_deg_loss = deg_rate * laps_remaining * (laps_remaining + 1) / 2
             if deg_rate > 0.2 and proj_tyre_laps <= 10:
                 force_pit = True  # extreme deg, near cliff
-            elif deg_rate > 0.15 and total_deg_loss > pit_loss * 0.8:
-                # High deg AND total projected loss approaches pit stop cost
+            elif deg_rate > 0.15 and total_deg_loss > pit_loss:
+                # Sustained high deg: cumulative loss from worn tyres now exceeds
+                # the cost of a pit stop, so fresh rubber pays off.
                 force_pit = True
 
         # 2. Safety car check
@@ -284,9 +288,10 @@ class StrategyEngine:
                     pit_options[d]["projected_total_time"]
                 ))
                 best_proj = projections[best_decision]
+                cumulative_loss = deg_rate * laps_remaining * (laps_remaining + 1) / 2
                 reasoning_parts.append(
                     f"FORCED PIT: {deg_rate:.2f}s/lap deg is unsustainable, "
-                    f"losing {deg_rate * laps_remaining:.1f}s total if staying out"
+                    f"losing ~{cumulative_loss:.1f}s cumulatively if staying out"
                 )
 
         # Confidence based on position delta and deg severity
