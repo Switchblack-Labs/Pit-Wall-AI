@@ -18,12 +18,6 @@ router = APIRouter(prefix="/api/v1", tags=["integration"])
 
 _granite = GraniteClient()
 
-_GRANITE_SYSTEM = (
-    "You are an F1 race strategist on the pit wall. Given a structured pit "
-    "recommendation and the current race state, write ONE concise, confident "
-    "sentence (max ~30 words) telling the driver what to do and why. No preamble."
-)
-
 
 def _template_explanation(rec: dict, state: dict) -> str:
     """Deterministic fallback so `explanation` is always a valid string,
@@ -38,14 +32,14 @@ def _template_explanation(rec: dict, state: dict) -> str:
 
 async def _explain(rec: dict, state: dict) -> str:
     """Pipe the structured call through Granite; fall back to a template on any error."""
-    prompt = (
-        f"Recommendation: {rec['recommended_action']} "
-        f"(confidence {rec['confidence']:.0%}, risk {rec['risk_level']}). "
-        f"Reason codes: {', '.join(rec['reason_codes'])}. "
-        f"Race state: {state}."
-    )
     try:
-        text = await _granite.generate(prompt, system=_GRANITE_SYSTEM)
+        resp = await _granite.explain_strategy(
+            recommendation=rec["recommended_action"],
+            confidence=rec["confidence"],
+            risk=rec["risk_level"],
+            reasons=rec["reason_codes"],
+        )
+        text = getattr(resp, "explanation", None)
         return (text or "").strip() or _template_explanation(rec, state)
     except Exception:
         return _template_explanation(rec, state)
