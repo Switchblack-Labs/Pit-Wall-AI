@@ -1,12 +1,16 @@
 import logging
-from pythonjsonlogger import jsonlogger
+
+try:
+    from pythonjsonlogger.json import JsonFormatter
+except ImportError:
+    from pythonjsonlogger.jsonlogger import JsonFormatter
 
 logger = logging.getLogger("pitwall")
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler()
 
-formatter = jsonlogger.JsonFormatter(
+formatter = JsonFormatter(
     "%(asctime)s %(levelname)s %(name)s %(message)s"
 )
 

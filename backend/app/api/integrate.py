@@ -1,5 +1,5 @@
 """
-Integration API — the single surface your teammate builds the frontend against.
+Integration API - the single surface your teammate builds the frontend against.
 
 Two endpoints:
   GET  /api/v1/sample-state   -> an editable example RaceState (seed the form)
@@ -26,7 +26,7 @@ def _template_explanation(rec: dict, state: dict) -> str:
     reasons = ", ".join(r.replace("_", " ").lower() for r in rec["reason_codes"]) or "current pace"
     return (
         f"{action}: P{state.get('position', '?')} with {state.get('tyre_life', '?')} laps on "
-        f"{state.get('compound', 'tyres')}, {state.get('laps_remaining', '?')} to go — driven by {reasons}."
+        f"{state.get('compound', 'tyres')}, {state.get('laps_remaining', '?')} to go - driven by {reasons}."
     )
 
 
@@ -53,7 +53,6 @@ def _get_recommendation(state: dict, competitors):
         engine = get_engine()
         return engine.recommend(state, competitors)
     except Exception:
-        # Engine not ready (models retraining). Minimal heuristic so the UI still works.
         tyre_life = state.get("tyre_life", 15)
         laps_remaining = state.get("laps_remaining", 25)
         if str(state.get("track_status")) in ("4", "6"):

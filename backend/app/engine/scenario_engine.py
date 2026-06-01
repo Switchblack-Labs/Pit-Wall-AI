@@ -23,7 +23,6 @@ def simulate_strategy(scenario_type: str, laps_until_action: int, race_state: di
     """
     engine = get_engine()
 
-    # Default representative state; overlaid with any real values supplied.
     state = {
         "circuit": "bahrain",
         "compound": "MEDIUM",
@@ -41,7 +40,6 @@ def simulate_strategy(scenario_type: str, laps_until_action: int, race_state: di
         "track_status": "1",
     }
     if race_state:
-        # Only override with non-None values from the caller.
         state.update({k: v for k, v in race_state.items() if v is not None})
 
     decision_map = {

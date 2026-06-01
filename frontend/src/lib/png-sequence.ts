@@ -1,0 +1,116 @@
+
+
+
+
+
+
+
+export class PngSequence {
+  private images = new Map<number, HTMLImageElement>();
+  private loading = new Set<number>();
+  public readonly basePath: string;
+  public readonly pad: number;
+  public readonly total: number;
+  public readonly ext: string;
+
+  constructor(total: number, basePath = "/hero/", pad = 4, ext = "webp") {
+    this.total = total;
+    this.basePath = basePath;
+    this.pad = pad;
+    this.ext = ext;
+  }
+
+  pathFor(i: number) {
+    return `${this.basePath}${String(i).padStart(this.pad, "0")}.${this.ext}`;
+  }
+
+  load(i: number): Promise<HTMLImageElement | null> {
+    const cached = this.images.get(i);
+    if (cached) return Promise.resolve(cached);
+    if (this.loading.has(i)) {
+      return new Promise((resolve) => {
+        const t = setInterval(() => {
+          if (this.images.has(i)) { clearInterval(t); resolve(this.images.get(i)!); }
+        }, 30);
+      });
+    }
+    this.loading.add(i);
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        this.images.set(i, img);
+        this.loading.delete(i);
+        resolve(img);
+      };
+      img.onerror = () => { this.loading.delete(i); resolve(null); };
+      img.src = this.pathFor(i);
+    });
+  }
+
+  preload(from: number, to: number, concurrent = 6): Promise<void> {
+    return new Promise((resolveAll) => {
+      const queue: number[] = [];
+      for (let i = from; i <= to; i++) queue.push(i);
+      let inflight = 0;
+      const tick = () => {
+        if (queue.length === 0 && inflight === 0) { resolveAll(); return; }
+        while (inflight < concurrent && queue.length) {
+          const i = queue.shift()!;
+          inflight++;
+          this.load(i).then(() => { inflight--; tick(); });
+        }
+      };
+      tick();
+    });
+  }
+
+  get(i: number): HTMLImageElement | null {
+    return this.images.get(i) ?? null;
+  }
+
+  
+
+
+
+  static async probeTotal(basePath = "/hero/", pad = 4, max = 600, ext = "webp"): Promise<number> {
+    const exists = async (i: number) => {
+      try {
+        const r = await fetch(`${basePath}${String(i).padStart(pad, "0")}.${ext}`, { method: "HEAD", cache: "no-store" });
+        return r.ok;
+      } catch { return false; }
+    };
+    
+    let lo = 0, hi = 1;
+    while (hi < max && await exists(hi)) { lo = hi; hi *= 2; }
+    hi = Math.min(hi, max);
+    while (lo + 1 < hi) {
+      const mid = (lo + hi) >> 1;
+      if (await exists(mid)) lo = mid; else hi = mid;
+    }
+    return lo + 1;
+  }
+}
+
+export function drawContain(
+  canvas: HTMLCanvasElement,
+  img: HTMLImageElement,
+  scale = 1,
+  yOffset = 0
+) {
+  
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+  const cw = canvas.clientWidth, ch = canvas.clientHeight;
+  const tw = Math.round(cw * dpr), th = Math.round(ch * dpr);
+  if (canvas.width !== tw) canvas.width = tw;
+  if (canvas.height !== th) canvas.height = th;
+  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true } as CanvasRenderingContext2DSettings);
+  if (!ctx) return;
+  ctx.clearRect(0, 0, tw, th);
+  const r = Math.min(tw / img.width, th / img.height) * scale;
+  const w = img.width * r;
+  const h = img.height * r;
+  
+  const y = (th - h) / 2 + th * yOffset;
+  ctx.drawImage(img, (tw - w) / 2, y, w, h);
+}

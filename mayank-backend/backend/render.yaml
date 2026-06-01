@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pitwall-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /health/
+    envVars:
+      - key: LLM_PROVIDER
+        value: auto
+      - key: LLM_FALLBACK_ORDER
+        value: watsonx,replicate,ollama,echo
+      # Set these in the Render dashboard (marked sync:false so they are not
+      # committed). With none set, the backend runs on the offline echo provider.
+      - key: WATSONX_API_KEY
+        sync: false
+      - key: WATSONX_PROJECT_ID
+        sync: false
+      - key: WATSONX_URL
+        sync: false
+      - key: REPLICATE_API_TOKEN
+        sync: false
+      - key: LANGFLOW_URL
+        sync: false
+      - key: LANGFLOW_API_KEY
+        sync: false

@@ -1,0 +1,95 @@
+{
+  "id": "fia_workflow",
+  "name": "FIA Regulations Workflow",
+  "description": "Question -> Retriever -> Context Builder -> Granite -> Answer. Mirrors app/orchestration/fia_workflow.py (the source of truth). Import into LangFlow and bind the env vars referenced below.",
+  "endpoint_name": "fia_workflow",
+  "data": {
+    "nodes": [
+      {
+        "id": "question_input",
+        "type": "ChatInput",
+        "position": {"x": 0, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Question",
+            "description": "FIA regulations question from the user.",
+            "template": {
+              "input_value": {"type": "str", "value": "", "required": true}
+            }
+          }
+        }
+      },
+      {
+        "id": "retriever",
+        "type": "ChromaSearch",
+        "position": {"x": 320, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "FIA Retriever (Chroma)",
+            "description": "Similarity search over the persisted FIA ChromaDB index.",
+            "template": {
+              "persist_directory": {"type": "str", "value": "app/rag/chroma_db"},
+              "embedding_model": {"type": "str", "value": "sentence-transformers/all-MiniLM-L6-v2"},
+              "k": {"type": "int", "value": 4}
+            }
+          }
+        }
+      },
+      {
+        "id": "context_builder",
+        "type": "PromptTemplate",
+        "position": {"x": 640, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Context Builder",
+            "description": "Concatenates retrieved chunks into grounded context with citations.",
+            "template": {
+              "template": {
+                "type": "prompt",
+                "value": "FIA REGULATIONS CONTEXT:\n{context}\n\nQUESTION:\n{question}\n\nAnswer using only the context above."
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "granite",
+        "type": "GraniteModel",
+        "position": {"x": 960, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Granite (IBM)",
+            "description": "Granite inference. Provider selected by env (watsonx | replicate | ollama).",
+            "template": {
+              "system_prompt": {
+                "type": "str",
+                "value": "You are Pit Wall AI, an FIA regulations expert. Answer ONLY from the provided context. If the answer is not in the context, say you could not find it. Never invent article numbers or values."
+              },
+              "model": {"type": "str", "value": "ibm-granite/granite-3.3-8b-instruct"},
+              "temperature": {"type": "float", "value": 0.1},
+              "max_tokens": {"type": "int", "value": 512}
+            }
+          }
+        }
+      },
+      {
+        "id": "answer_output",
+        "type": "ChatOutput",
+        "position": {"x": 1280, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Answer",
+            "description": "Grounded answer with citations."
+          }
+        }
+      }
+    ],
+    "edges": [
+      {"id": "e1", "source": "question_input", "target": "retriever"},
+      {"id": "e2", "source": "question_input", "target": "context_builder"},
+      {"id": "e3", "source": "retriever", "target": "context_builder"},
+      {"id": "e4", "source": "context_builder", "target": "granite"},
+      {"id": "e5", "source": "granite", "target": "answer_output"}
+    ]
+  }
+}

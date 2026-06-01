@@ -1,0 +1,80 @@
+{
+  "id": "explainability_workflow",
+  "name": "Explainability Workflow",
+  "description": "Recommendation -> Reasoning -> Granite -> Explanation. Mirrors app/orchestration/explainability_workflow.py (the source of truth). Import into LangFlow and bind the Granite provider env vars.",
+  "endpoint_name": "explainability_workflow",
+  "data": {
+    "nodes": [
+      {
+        "id": "recommendation_input",
+        "type": "DataInput",
+        "position": {"x": 0, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Recommendation",
+            "description": "Strategy recommendation fields from the strategy engine.",
+            "template": {
+              "recommended_action": {"type": "str", "value": "", "required": true},
+              "confidence": {"type": "float", "value": 0.0},
+              "risk_level": {"type": "str", "value": ""},
+              "reason_codes": {"type": "list", "value": []}
+            }
+          }
+        }
+      },
+      {
+        "id": "reasoning",
+        "type": "PromptTemplate",
+        "position": {"x": 360, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Reasoning / Prompt Builder",
+            "description": "Builds the race-engineer explanation prompt from the recommendation.",
+            "template": {
+              "template": {
+                "type": "prompt",
+                "value": "RECOMMENDED ACTION: {recommended_action}\nCONFIDENCE: {confidence}\nRISK LEVEL: {risk_level}\nREASON CODES: {reason_codes}\nWrite a concise 2-4 sentence pit-wall explanation."
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "granite",
+        "type": "GraniteModel",
+        "position": {"x": 720, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Granite (IBM)",
+            "description": "Granite inference. Provider selected by env (watsonx | replicate | ollama).",
+            "template": {
+              "system_prompt": {
+                "type": "str",
+                "value": "You are an elite Formula 1 race engineer. Explain the strategy recommendation clearly and concisely, grounded only in the supplied fields. Do not invent telemetry or rules."
+              },
+              "model": {"type": "str", "value": "ibm-granite/granite-3.3-8b-instruct"},
+              "temperature": {"type": "float", "value": 0.3},
+              "max_tokens": {"type": "int", "value": 256}
+            }
+          }
+        }
+      },
+      {
+        "id": "explanation_output",
+        "type": "ChatOutput",
+        "position": {"x": 1080, "y": 0},
+        "data": {
+          "node": {
+            "display_name": "Explanation",
+            "description": "Natural-language strategy explanation."
+          }
+        }
+      }
+    ],
+    "edges": [
+      {"id": "e1", "source": "recommendation_input", "target": "reasoning"},
+      {"id": "e2", "source": "reasoning", "target": "granite"},
+      {"id": "e3", "source": "granite", "target": "explanation_output"}
+    ]
+  }
+}

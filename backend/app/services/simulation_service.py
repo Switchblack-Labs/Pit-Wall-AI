@@ -18,18 +18,26 @@ class SimulationService:
         request: SimulationRequest
     ) -> SimulationResult:
 
-        # Pass through any real race-state fields the caller supplied; the
-        # engine overlays them on its defaults (scenario_type/laps_until_action
-        # are handled separately, so exclude them from the state dict).
-        race_state = request.model_dump(
-            exclude={"scenario_type", "laps_until_action"},
-            exclude_none=True,
-        )
+        race_state = None
+        if request.context is not None:
+            ctx = request.context.model_dump(exclude_none=True)
+            if "tyre_age_laps" in ctx:
+                ctx["tyre_life"] = ctx.pop("tyre_age_laps")
+            if "lap" in ctx and "total_laps" in ctx:
+                ctx.setdefault("laps_remaining", max(1, ctx["total_laps"] - ctx["lap"]))
+            ctx.pop("lap", None)
+            compound_map = {"S": "SOFT", "M": "MEDIUM", "H": "HARD",
+                            "I": "INTERMEDIATE", "W": "WET"}
+            if ctx.get("compound") in compound_map:
+                ctx["compound"] = compound_map[ctx["compound"]]
+            if "gap_s" in ctx:
+                ctx.setdefault("gap_to_leader_s", ctx.pop("gap_s"))
+            race_state = ctx
 
         result = simulate_strategy(
             request.scenario_type,
             request.laps_until_action,
-            race_state or None,
+            race_state=race_state,
         )
 
         await self.websocket_service.broadcast({

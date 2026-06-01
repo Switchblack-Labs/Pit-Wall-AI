@@ -5,7 +5,6 @@ Drop-in replacement: returns StrategyRecommendation Pydantic model.
 import os
 import sys
 
-# Make ml_engine importable from backend context
 _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
@@ -21,7 +20,6 @@ def recommend_strategy(race_state, competitors):
     """
     engine = get_engine()
 
-    # Normalize race_state to dict
     if hasattr(race_state, "snapshot"):
         state_dict = race_state.snapshot()
         tel = (state_dict.get("telemetry") or {})
@@ -37,7 +35,6 @@ def recommend_strategy(race_state, competitors):
     else:
         state_dict = {}
 
-    # Normalize competitors to list of dicts
     comp_list = None
     if competitors:
         comp_list = []

@@ -1,0 +1,45 @@
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: pitwall-backend
+    ports:
+      - "8000:8000"
+    environment:
+      LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+      LLM_FALLBACK_ORDER: ${LLM_FALLBACK_ORDER:-watsonx,replicate,echo}
+      WATSONX_API_KEY: ${WATSONX_API_KEY:-}
+      WATSONX_PROJECT_ID: ${WATSONX_PROJECT_ID:-}
+      WATSONX_URL: ${WATSONX_URL:-https://us-south.ml.cloud.ibm.com}
+      WATSONX_MODEL: ${WATSONX_MODEL:-ibm/granite-3-3-8b-instruct}
+      REPLICATE_API_TOKEN: ${REPLICATE_API_TOKEN:-}
+      REPLICATE_MODEL: ${REPLICATE_MODEL:-ibm-granite/granite-3.3-8b-instruct}
+      LANGFLOW_URL: ${LANGFLOW_URL:-}
+      LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: pitwall-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: pitwall-langflow
+    profiles: ["langflow"]
+    ports:
+      - "7860:7860"
+    environment:
+      LANGFLOW_HOST: 0.0.0.0
+      LANGFLOW_PORT: 7860
+    restart: unless-stopped

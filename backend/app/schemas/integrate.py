@@ -2,7 +2,7 @@
 Integration-facing schemas for the Pit Wall AI strategy API.
 
 These are the STABLE contract your teammate builds the frontend against.
-They do not change when the ML models are retrained in the background —
+They do not change when the ML models are retrained in the background -
 only the numbers in the response change, never the shape.
 """
 from typing import List, Optional
@@ -42,7 +42,7 @@ class FullRecommendation(BaseModel):
     """What the API returns. recommended_action is the machine-readable call;
     explanation is the Granite natural-language pit-wall message."""
     recommended_action: str = Field(..., description="PIT_SOFT | PIT_MEDIUM | PIT_HARD | STAY_OUT")
-    confidence: float = Field(..., description="0.0–1.0")
+    confidence: float = Field(..., description="0.0-1.0")
     risk_level: str = Field(..., description="low | medium | high")
     reason_codes: List[str] = Field(..., description="e.g. HIGH_DEGRADATION, UNDERCUT_VIABLE, SAFETY_CAR_PIT_WINDOW")
     explanation: str = Field(..., description="Granite-generated natural-language advice for the pit wall")

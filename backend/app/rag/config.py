@@ -7,3 +7,5 @@ LLM_MODEL = "llama-3.3-70b-versatile"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 CHROMA_DB_DIR = "app/rag/chroma_db"
+
+RETRIEVAL_K = int(os.getenv("RAG_RETRIEVAL_K", "4"))
