@@ -8,6 +8,7 @@
 export class PngSequence {
   private images = new Map<number, HTMLImageElement>();
   private loading = new Set<number>();
+  private failed = new Set<number>();
   public readonly basePath: string;
   public readonly pad: number;
   public readonly total: number;
@@ -25,25 +26,40 @@ export class PngSequence {
   }
 
   load(i: number): Promise<HTMLImageElement | null> {
+    if (this.failed.has(i)) return Promise.resolve(null);
     const cached = this.images.get(i);
     if (cached) return Promise.resolve(cached);
     if (this.loading.has(i)) {
       return new Promise((resolve) => {
+        let waited = 0;
         const t = setInterval(() => {
           if (this.images.has(i)) { clearInterval(t); resolve(this.images.get(i)!); }
+          waited += 30;
+          if (waited >= 600) { clearInterval(t); resolve(null); }
         }, 30);
       });
     }
     this.loading.add(i);
     return new Promise((resolve) => {
       const img = new window.Image();
+      const timeout = window.setTimeout(() => {
+        this.loading.delete(i);
+        this.failed.add(i);
+        resolve(null);
+      }, 900);
       img.crossOrigin = "anonymous";
       img.onload = () => {
+        window.clearTimeout(timeout);
         this.images.set(i, img);
         this.loading.delete(i);
         resolve(img);
       };
-      img.onerror = () => { this.loading.delete(i); resolve(null); };
+      img.onerror = () => {
+        window.clearTimeout(timeout);
+        this.loading.delete(i);
+        this.failed.add(i);
+        resolve(null);
+      };
       img.src = this.pathFor(i);
     });
   }
@@ -67,6 +83,18 @@ export class PngSequence {
 
   get(i: number): HTMLImageElement | null {
     return this.images.get(i) ?? null;
+  }
+
+  nearest(i: number, radius = 8): HTMLImageElement | null {
+    const exact = this.get(i);
+    if (exact) return exact;
+    for (let d = 1; d <= radius; d++) {
+      const prev = this.get(i - d);
+      if (prev) return prev;
+      const next = this.get(i + d);
+      if (next) return next;
+    }
+    return null;
   }
 
   

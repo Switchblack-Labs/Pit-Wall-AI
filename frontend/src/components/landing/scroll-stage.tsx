@@ -49,10 +49,8 @@ export function ScrollStage({
       if (c) { drawContain(c, img, HERO_SCALE, HERO_YOFFSET); setReady(true); }
     });
 
-    seq.preload(START_FRAME, FALLBACK_TOTAL - 1, 8).then(() => {
-      if (!killed) setReady(true);
-    });
-    explosionSeq.preload(0, EXPLOSION_TOTAL - 1, 8);
+    seq.preload(START_FRAME, FALLBACK_TOTAL - 1, 3);
+    explosionSeq.preload(0, EXPLOSION_TOTAL - 1, 3);
 
     return () => { killed = true; };
   }, []);
@@ -127,7 +125,8 @@ export function ScrollStage({
           if (y >= expTop && y <= expBottom) {
             const p = Math.max(0, Math.min(1, (y - expTop) / Math.max(1, expBottom - expTop)));
             const expFrame = Math.round(p * (EXPLOSION_TOTAL - 1));
-            const img = explosionSeq.get(expFrame) ?? explosionSeq.get(Math.max(0, expFrame - 1));
+            let img = explosionSeq.nearest(expFrame, 10);
+            if (!img) explosionSeq.load(expFrame);
             if (img) {
               const scaleDownProgress = Math.max(0, Math.min(1, (expFrame - EXPLOSION_SCALE_DOWN_START) / Math.max(1, EXPLOSION_TOTAL - 1 - EXPLOSION_SCALE_DOWN_START)));
               setZone((z) => (z !== "reel" ? "reel" : z));
@@ -150,7 +149,8 @@ export function ScrollStage({
         setZone((z) => (z !== newZone ? newZone : z));
 
         const f = Math.min(total - 1, Math.max(START_FRAME, frame));
-        const img = seq.get(f) ?? seq.get(Math.max(START_FRAME, f - 1));
+        let img = seq.nearest(f, 10);
+        if (!img) seq.load(f);
         if (img) {
           drawContain(c, img, scale, yOffset);
           lastFrameRef.current = f;
