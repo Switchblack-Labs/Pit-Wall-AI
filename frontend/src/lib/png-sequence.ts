@@ -85,6 +85,15 @@ export class PngSequence {
     return this.images.get(i) ?? null;
   }
 
+  preloadWindow(center: number, before: number, after: number): void {
+    const lo = Math.max(0, center - before);
+    const hi = Math.min(this.total - 1, center + after);
+    for (let i = lo; i <= hi; i++) {
+      if (this.images.has(i) || this.loading.has(i) || this.failed.has(i)) continue;
+      this.load(i);
+    }
+  }
+
   nearest(i: number, radius = 8): HTMLImageElement | null {
     const exact = this.get(i);
     if (exact) return exact;

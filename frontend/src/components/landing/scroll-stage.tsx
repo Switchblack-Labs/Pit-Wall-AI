@@ -180,6 +180,7 @@ export function ScrollStage({
               drawContain(c, img, drawScale, mouseSmoothRef.current.y * amp, mouseSmoothRef.current.x * amp);
               lastFrameRef.current = expFrame;
             }
+            explosionSeq.preloadWindow(expFrame, 6, 12);
             return;
           }
           inExplosionRef.current = false;
@@ -204,6 +205,7 @@ export function ScrollStage({
           drawContain(c, img, scale, yOffset);
           lastFrameRef.current = f;
         }
+        seq.preloadWindow(f, 6, 12);
       });
     };
 
