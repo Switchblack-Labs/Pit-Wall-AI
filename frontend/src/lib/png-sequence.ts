@@ -124,7 +124,8 @@ export function drawContain(
   canvas: HTMLCanvasElement,
   img: HTMLImageElement,
   scale = 1,
-  yOffset = 0
+  yOffset = 0,
+  xOffset = 0
 ) {
   
   const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
@@ -140,5 +141,6 @@ export function drawContain(
   const h = img.height * r;
   
   const y = (th - h) / 2 + th * yOffset;
-  ctx.drawImage(img, (tw - w) / 2, y, w, h);
+  const x = (tw - w) / 2 + tw * xOffset;
+  ctx.drawImage(img, x, y, w, h);
 }

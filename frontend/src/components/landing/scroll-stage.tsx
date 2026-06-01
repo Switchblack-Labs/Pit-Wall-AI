@@ -31,6 +31,12 @@ export function ScrollStage({
   const explosionSeqRef = useRef<PngSequence | null>(null);
   const totalRef = useRef<number>(FALLBACK_TOTAL);
   const lastFrameRef = useRef<number>(-1);
+  const mouseTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const mouseSmoothRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const inExplosionRef = useRef<boolean>(false);
+  const lastExplosionImgRef = useRef<HTMLImageElement | null>(null);
+  const lastExplosionScaleRef = useRef<number>(EXPLOSION_SCALE);
+  const lastScaleDownProgressRef = useRef<number>(0);
   const [zone, setZone] = useState<"hero" | "reel" | "hidden">("hero");
   const [ready, setReady] = useState(false);
 
@@ -53,6 +59,40 @@ export function ScrollStage({
     explosionSeq.preload(0, EXPLOSION_TOTAL - 1, 3);
 
     return () => { killed = true; };
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      mouseTargetRef.current.x = (e.clientX / w) * 2 - 1;
+      mouseTargetRef.current.y = (e.clientY / h) * 2 - 1;
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    let raf = 0;
+    const INERTIA = 0.045;
+    const tick = () => {
+      const t = mouseTargetRef.current;
+      const s = mouseSmoothRef.current;
+      s.x += (t.x - s.x) * INERTIA;
+      s.y += (t.y - s.y) * INERTIA;
+      if (inExplosionRef.current) {
+        const c = canvasRef.current;
+        const img = lastExplosionImgRef.current;
+        if (c && img) {
+          const amp = 0.006 + lastScaleDownProgressRef.current * 0.01;
+          drawContain(c, img, lastExplosionScaleRef.current, s.y * amp, s.x * amp);
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   useEffect(() => {
@@ -96,6 +136,7 @@ export function ScrollStage({
         const totalRange = total - START_FRAME - 1;
         const bufferEnd = heroBottom + (bufferVh / 100) * vh;
 
+        inExplosionRef.current = false;
         let frame = START_FRAME;
         let newZone: "hero" | "reel" | "hidden" = "hidden";
         let scale = HERO_SCALE;
@@ -129,17 +170,25 @@ export function ScrollStage({
             if (!img) explosionSeq.load(expFrame);
             if (img) {
               const scaleDownProgress = Math.max(0, Math.min(1, (expFrame - EXPLOSION_SCALE_DOWN_START) / Math.max(1, EXPLOSION_TOTAL - 1 - EXPLOSION_SCALE_DOWN_START)));
+              const drawScale = lerp(EXPLOSION_SCALE, EXPLOSION_END_SCALE, scaleDownProgress);
               setZone((z) => (z !== "reel" ? "reel" : z));
-              drawContain(c, img, lerp(EXPLOSION_SCALE, EXPLOSION_END_SCALE, scaleDownProgress), 0);
+              inExplosionRef.current = true;
+              lastExplosionImgRef.current = img;
+              lastExplosionScaleRef.current = drawScale;
+              lastScaleDownProgressRef.current = scaleDownProgress;
+              const amp = 0.006 + scaleDownProgress * 0.01;
+              drawContain(c, img, drawScale, mouseSmoothRef.current.y * amp, mouseSmoothRef.current.x * amp);
               lastFrameRef.current = expFrame;
             }
             return;
           }
+          inExplosionRef.current = false;
           frame = total - 1;
           newZone = "hidden";
           scale = REEL_SCALE;
           yOffset = REEL_YOFFSET;
         } else {
+          inExplosionRef.current = false;
           frame = total - 1;
           newZone = "hidden";
           scale = REEL_SCALE;
