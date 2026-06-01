@@ -38,12 +38,16 @@
     border-radius: 999px;
   }
   *::-webkit-scrollbar-corner { background: transparent; }
+  html.landing-scrollbar-hidden,
   body.landing-scrollbar-hidden {
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  html.landing-scrollbar-hidden::-webkit-scrollbar,
   body.landing-scrollbar-hidden::-webkit-scrollbar {
     width: 0;
     height: 0;
+    display: none;
   }
 }
 

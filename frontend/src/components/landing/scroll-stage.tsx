@@ -52,7 +52,7 @@ export function ScrollStage({
     seq.load(START_FRAME).then((img) => {
       if (killed || !img) return;
       const c = canvasRef.current;
-      if (c) { drawContain(c, img, HERO_SCALE, HERO_YOFFSET); setReady(true); }
+      if (c) { drawContain(c, img, HERO_SCALE, HERO_YOFFSET, 0, "cover"); setReady(true); }
     });
 
     seq.preload(START_FRAME, FALLBACK_TOTAL - 1, 3);
@@ -96,10 +96,13 @@ export function ScrollStage({
   }, []);
 
   useEffect(() => {
-    const original = document.body.classList.contains("landing-scrollbar-hidden");
+    const bodyHad = document.body.classList.contains("landing-scrollbar-hidden");
+    const htmlHad = document.documentElement.classList.contains("landing-scrollbar-hidden");
     document.body.classList.add("landing-scrollbar-hidden");
+    document.documentElement.classList.add("landing-scrollbar-hidden");
     return () => {
-      if (!original) document.body.classList.remove("landing-scrollbar-hidden");
+      if (!bodyHad) document.body.classList.remove("landing-scrollbar-hidden");
+      if (!htmlHad) document.documentElement.classList.remove("landing-scrollbar-hidden");
     };
   }, []);
 
@@ -202,7 +205,7 @@ export function ScrollStage({
         let img = seq.nearest(f, 10);
         if (!img) seq.load(f);
         if (img) {
-          drawContain(c, img, scale, yOffset);
+          drawContain(c, img, scale, yOffset, 0, "cover");
           lastFrameRef.current = f;
         }
         seq.preloadWindow(f, 6, 12);

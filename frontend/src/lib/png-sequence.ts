@@ -134,7 +134,8 @@ export function drawContain(
   img: HTMLImageElement,
   scale = 1,
   yOffset = 0,
-  xOffset = 0
+  xOffset = 0,
+  mode: "contain" | "cover" = "contain"
 ) {
   
   const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
@@ -145,7 +146,10 @@ export function drawContain(
   const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true } as CanvasRenderingContext2DSettings);
   if (!ctx) return;
   ctx.clearRect(0, 0, tw, th);
-  const r = Math.min(tw / img.width, th / img.height) * scale;
+  const fit = mode === "cover"
+    ? Math.max(tw / img.width, th / img.height)
+    : Math.min(tw / img.width, th / img.height);
+  const r = fit * scale;
   const w = img.width * r;
   const h = img.height * r;
   
