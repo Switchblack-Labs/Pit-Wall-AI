@@ -1,8 +1,8 @@
 {
-  "passed": 6,
-  "failed": 1,
-  "skipped": 1,
-  "pass_rate": 0.8571428571428571,
+  "passed": 8,
+  "failed": 0,
+  "skipped": 0,
+  "pass_rate": 1.0,
   "details": [
     {
       "name": "Monaco 2022 - Double Stack Disaster",
@@ -11,7 +11,7 @@
       "ferrari_action": "PIT",
       "model_action": "STAY_OUT",
       "confidence": 0.85,
-      "reasoning": "Undercut possible in ~4 laps, projected gain 1.5s. Good tyre life remaining, no need to pit",
+      "reasoning": "Undercut possible in ~7 laps, projected gain 0.4s. Good tyre life remaining, no need to pit",
       "reason_codes": [
         "UNDERCUT_VIABLE"
       ],
@@ -33,9 +33,9 @@
       "status": "PASS",
       "correct_action": "PIT_MEDIUM",
       "ferrari_action": "PIT_HARD",
-      "model_action": "PIT_MEDIUM",
+      "model_action": "PIT_HARD",
       "confidence": 0.85,
-      "reasoning": "Extreme deg rate 0.33s/lap - losing >0.2s every lap. FORCED PIT: 0.33s/lap deg is unsustainable, losing 10.2s total if staying out. Pit for MEDIUM projects P5 vs P1 staying out",
+      "reasoning": "Extreme deg rate 0.33s/lap - losing >0.2s every lap. FORCED PIT: 0.33s/lap deg is unsustainable, losing ~163.9s cumulatively if staying out. Pit for HARD projects P4 vs P1 staying out",
       "reason_codes": [
         "EXTREME_DEGRADATION"
       ],
@@ -43,14 +43,15 @@
     },
     {
       "name": "Bahrain 2023 - Failed Overcut",
-      "status": "FAIL",
+      "status": "PASS",
       "correct_action": "PIT_HARD",
       "ferrari_action": "STAY_OUT",
-      "model_action": "STAY_OUT",
-      "confidence": 0.5,
-      "reasoning": "High deg rate of 0.19s/lap. Staying out despite elevated degradation",
+      "model_action": "PIT_HARD",
+      "confidence": 0.85,
+      "reasoning": "High deg rate of 0.19s/lap. Undercut possible in ~10 laps, projected gain 0.7s. FORCED PIT: 0.19s/lap deg is unsustainable, losing ~55.8s cumulatively if staying out. Pit for HARD projects P4 vs P2 staying out",
       "reason_codes": [
-        "HIGH_DEGRADATION"
+        "HIGH_DEGRADATION",
+        "UNDERCUT_VIABLE"
       ],
       "positions_lost_by_ferrari": 1
     },
@@ -59,9 +60,9 @@
       "status": "PASS",
       "correct_action": "PIT_MEDIUM",
       "ferrari_action": "STAY_OUT",
-      "model_action": "PIT_SOFT",
+      "model_action": "PIT_MEDIUM",
       "confidence": 0.8,
-      "reasoning": "Safety car: Tyres at 48% - opportunistic stop; Gap behind (6.2s) too small - will lose position; OVERRIDE: 18 laps remaining, switch to SOFT for pace advantage",
+      "reasoning": "Safety car: Tyres at 48% - opportunistic stop; Gap behind (6.2s) too small - will lose position; OVERRIDE: 18 laps remaining, switch to MEDIUM for pace advantage",
       "reason_codes": [
         "SAFETY_CAR_PIT_WINDOW",
         "HIGH_DEGRADATION"
@@ -88,7 +89,7 @@
       "ferrari_action": "STAY_OUT",
       "model_action": "PIT_HARD",
       "confidence": 0.9,
-      "reasoning": "Tyres near cliff - only ~0 laps remaining on SOFT. Undercut possible in ~2 laps, projected gain 2.0s. Pit for HARD projects P12 vs P20 staying out",
+      "reasoning": "Tyres near cliff - only ~2 laps remaining on SOFT. Undercut possible in ~3 laps, projected gain 0.5s. Pit for HARD projects P10 vs P20 staying out",
       "reason_codes": [
         "CRITICAL_TYRE_WEAR",
         "UNDERCUT_VIABLE"
@@ -97,8 +98,14 @@
     },
     {
       "name": "Mexico 2024 - Overextended Mediums",
-      "status": "SKIP",
-      "reason": "No data for 2024_mexico_city_r lap 30"
+      "status": "PASS",
+      "correct_action": "PIT_HARD",
+      "ferrari_action": "STAY_OUT",
+      "model_action": "PIT_HARD",
+      "confidence": 0.7,
+      "reasoning": "Pit for HARD projects P1 vs P2 staying out",
+      "reason_codes": [],
+      "positions_lost_by_ferrari": 2
     }
   ]
 }
