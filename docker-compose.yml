@@ -16,6 +16,9 @@ services:
       WATSONX_MODEL: ${WATSONX_MODEL:-ibm/granite-3-3-8b-instruct}
       REPLICATE_API_TOKEN: ${REPLICATE_API_TOKEN:-}
       REPLICATE_MODEL: ${REPLICATE_MODEL:-ibm-granite/granite-3.3-8b-instruct}
+      NVIDIA_NIM_BASE_URL: ${NVIDIA_NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      NVIDIA_NIM_API_KEY: ${NVIDIA_NIM_API_KEY:-}
+      NVIDIA_NIM_MODEL: ${NVIDIA_NIM_MODEL:-meta/llama3-70b-instruct}
       LANGFLOW_URL: ${LANGFLOW_URL:-}
       LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
     restart: unless-stopped

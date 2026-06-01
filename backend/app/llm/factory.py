@@ -19,6 +19,7 @@ from typing import Dict, List, Optional
 from app.config import Settings, get_settings
 from app.llm.base import GraniteProvider
 from app.llm.providers.echo import EchoProvider
+from app.llm.providers.nvidia_nim import NvidiaNimProvider
 from app.llm.providers.ollama_provider import OllamaGraniteProvider
 from app.llm.providers.replicate_provider import ReplicateGraniteProvider
 from app.llm.providers.watsonx import WatsonXProvider
@@ -47,6 +48,12 @@ def _build_provider(name: str, settings: Settings) -> Optional[GraniteProvider]:
         return OllamaGraniteProvider(
             model=settings.OLLAMA_MODEL,
             base_url=settings.OLLAMA_BASE_URL,
+        )
+    if name in {"nvidia", "nvidia_nim", "nim"}:
+        return NvidiaNimProvider(
+            model=settings.NVIDIA_NIM_MODEL,
+            api_key=settings.NVIDIA_NIM_API_KEY,
+            base_url=settings.NVIDIA_NIM_BASE_URL,
         )
     if name == "echo":
         return EchoProvider()

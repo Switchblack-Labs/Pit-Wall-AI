@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "granite3.3:8b"
 
+    NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+    NVIDIA_NIM_API_KEY: str = ""
+    NVIDIA_NIM_MODEL: str = "meta/llama3-70b-instruct"
+
     MOCK_TELEMETRY_MODE: bool = True
     TELEMETRY_SOURCE: str = "mock"
 
