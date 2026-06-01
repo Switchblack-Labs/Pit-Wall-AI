@@ -2,6 +2,8 @@
 Projected race finish simulator.
 Given current state and a decision, project where the driver finishes.
 """
+import json
+import os
 import numpy as np
 from ml_engine.math_engine.degradation import DegradationModel
 from ml_engine.math_engine.overtake import OvertakeModel
@@ -11,6 +13,17 @@ class RaceProjector:
     def __init__(self, deg_model: DegradationModel, overtake_model: OvertakeModel):
         self.deg = deg_model
         self.overtake = overtake_model
+        self.aggression_profiles = self._load_aggression()
+
+    def _load_aggression(self):
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "models", "saved", "aggression_profiles.json"
+        )
+        if os.path.exists(path):
+            with open(path) as f:
+                return json.load(f)
+        return {}
 
     def project(self, state, decision, competitors=None):
         """
@@ -110,13 +123,26 @@ class RaceProjector:
         return ahead_count + 1
 
     def _project_competitor_time(self, comp, circuit, laps_remaining, track_temp):
-        """Project total race time for a competitor."""
+        """Project total race time for a competitor, adjusted for driver aggression."""
         total = comp.get("gap_to_leader_s") or 0
         compound = comp.get("compound") or "MEDIUM"
         tyre_life = comp.get("tyre_life") or 10
 
+        # Aggression affects stint extension: aggressive drivers push harder
+        # on worn tyres (slightly faster early, but more deg late)
+        driver = comp.get("driver")
+        aggr = 0.5
+        if driver and driver in self.aggression_profiles:
+            aggr = self.aggression_profiles[driver]["aggression"]
+
+        # Aggressive drivers extract ~0.5-1.5% more from worn tyres early
+        # but hit cliff harder. Net effect: stint_extension laps longer.
+        stint_ext = int((aggr - 0.5) * 5)  # -2 to +2 laps vs neutral
+
         for lap in range(1, laps_remaining + 1):
-            t = self.deg.predict_lap_time(circuit, compound, tyre_life + lap, track_temp)
+            effective_tyre = tyre_life + lap - stint_ext
+            effective_tyre = max(1, effective_tyre)
+            t = self.deg.predict_lap_time(circuit, compound, effective_tyre, track_temp)
             if t is None:
                 t = 90.0
             total += t

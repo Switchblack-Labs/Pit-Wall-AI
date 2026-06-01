@@ -338,6 +338,19 @@ class StrategyEngine:
                 reasoning_parts.append("Too few laps remaining to benefit from pit stop")
                 reason_codes.append("LATE_RACE_STAY_OUT")
 
+        # Competitor aggression context
+        competitor_profiles = {}
+        if competitors:
+            profiles = self.projector.aggression_profiles
+            for c in competitors:
+                drv = c.get("driver")
+                if drv and drv in profiles:
+                    competitor_profiles[drv] = {
+                        "aggression": profiles[drv]["aggression"],
+                        "overtake_rate": profiles[drv].get("overtake_rate"),
+                        "stint_vs_field_avg": profiles[drv].get("stint_vs_field_avg"),
+                    }
+
         return {
             "recommended_action": best_decision,
             "confidence": round(confidence, 2),
@@ -346,4 +359,5 @@ class StrategyEngine:
             "reasoning": ". ".join(reasoning_parts) if reasoning_parts else "Maintaining current strategy",
             "projections": projections,
             "analysis": analysis,
+            "competitor_profiles": competitor_profiles,
         }
